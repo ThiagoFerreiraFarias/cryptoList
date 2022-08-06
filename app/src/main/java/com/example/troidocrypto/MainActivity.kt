@@ -23,7 +23,10 @@ class MainActivity : AppCompatActivity(), PresenterViewModel.View {
         recycler.layoutManager = LinearLayoutManager(
             this, LinearLayoutManager.VERTICAL,
             false
-        )
+        ).apply {
+            reverseLayout = true
+            stackFromEnd = true
+        }
     }
 
     override fun notifyListUpdated() {
