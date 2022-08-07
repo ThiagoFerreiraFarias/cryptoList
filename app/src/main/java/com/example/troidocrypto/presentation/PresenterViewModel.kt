@@ -24,11 +24,8 @@ class PresenterViewModel : ViewModel() {
     private var compositeDisposable = CompositeDisposable()
     private var requestScheduler: Scheduler = AndroidSchedulers.mainThread()
 
-    fun setView(view: View) {
+    fun initSetup(view: View) {
         this.view = view
-    }
-
-    init {
         cryptoData.set(updateList)
         getRate()
         repeatRequest()
@@ -45,28 +42,35 @@ class PresenterViewModel : ViewModel() {
     }
 
     private fun getRate() {
-        compositeDisposable.add(
-            useCase.getUpdate()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess(::handleResults)
-                .doOnError(::handleError)
-                .subscribe()
-        )
+        try {
+            compositeDisposable.add(
+                useCase.getUpdate()
+                    .doOnError(::handleError)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSuccess(::handleResults)
+                    .subscribe()
+            )
+        } catch (e: Exception) {
+            handleError(e)
+        }
     }
 
-    private fun handleResults(update: CoinBaseUpdate) {
+    private fun handleResults(updateCoin: CoinBaseUpdate) {
         if (updateList.size >= MAX_CARD_DISPLAYED) {
             updateList.removeAt(0)
-            updateList.add(update)
+            updateList.add(updateCoin)
         } else {
-            updateList.add(update)
+            updateList.add(updateCoin)
         }
         view.notifyListUpdated()
     }
 
     private fun handleError(error: Throwable) {
+        requestScheduler.shutdown()
+        compositeDisposable.dispose()
         Log.e("API_EXCEPTION", error.message.toString())
+        view.displayErrorMessage()
     }
 
     override fun onCleared() {
@@ -77,5 +81,6 @@ class PresenterViewModel : ViewModel() {
 
     interface View {
         fun notifyListUpdated()
+        fun displayErrorMessage()
     }
 }
