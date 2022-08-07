@@ -8,5 +8,5 @@ class GetRateUseCase {
 
     private val cryptoApi = Api.cryptoApi
 
-    fun getUpdate(): Single<CoinBaseUpdate> = cryptoApi.getRateAsync()
+    fun getRateUpdate(): Single<CoinBaseUpdate> = cryptoApi.getRateAsync()
 }

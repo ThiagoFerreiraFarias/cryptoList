@@ -19,9 +19,20 @@ class MainActivity : AppCompatActivity(), PresenterViewModel.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setupUI()
+        presenter.initSetup(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        presenter.verifyRequestStatus()
+    }
+
+    private fun setupUI() {
         warningText = this.findViewById(R.id.tv_error_message)
         recycler = this.findViewById(R.id.main_recycler)
-        recycler.adapter = CryptoCardAdapter(presenter.cryptoData)
+
+        recycler.adapter = CryptoCardAdapter(presenter.ratesUpdate)
         recycler.adapter?.notifyDataSetChanged()
         recycler.layoutManager = LinearLayoutManager(
             this, LinearLayoutManager.VERTICAL,
@@ -30,11 +41,10 @@ class MainActivity : AppCompatActivity(), PresenterViewModel.View {
             reverseLayout = true
             stackFromEnd = true
         }
-        presenter.initSetup(this)
     }
 
     override fun notifyListUpdated() {
-        if(recycler.visibility == View.GONE){
+        if (recycler.visibility == View.GONE) {
             warningText.visibility = View.GONE
             recycler.visibility = View.VISIBLE
         }
